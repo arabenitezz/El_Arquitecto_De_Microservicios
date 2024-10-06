@@ -21,6 +21,20 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# Ruta para recibir eventos del Microservicio 1
+@app.route('/events', methods=['POST'])
+def handle_event():
+    event = request.json
+    print(f"Evento recibido: {event}")
+    if event["event"] == "UserCreated":
+        user_data = event["user"]
+        # Guardar los datos del usuario en la base de datos local
+        query_result = AgeQueryResult(user_id=user_data['id'], age=user_data['age'])
+        db.session.add(query_result)
+        db.session.commit()
+        return jsonify({"message": "Los datos fueron sincronizados"}), 200
+    return jsonify({"message": "Tipo de evento desconocido"}), 400
+
 # Decorador para requerir token en las rutas
 def token_required(f):
     @wraps(f)

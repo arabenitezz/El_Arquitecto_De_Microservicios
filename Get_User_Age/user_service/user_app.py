@@ -3,6 +3,7 @@ from marshmallow import ValidationError # Manejo de errores
 from models import db, user_schema, User
 import jwt # Manejo de tokens jwt
 import datetime # Para el tiempo de duracion de los tokens
+import requests
 
 # Inicialización de la aplicación Flask
 app = Flask(__name__)
@@ -47,6 +48,23 @@ def create_user():
 
         # Genera un token para el nuevo usuario
         token = generate_token(new_user)
+
+        # Publica un evento al Microservicio 2 notificando la creacion del usuario
+        event_data = {
+            "event": "UserCreated",
+            "user": {
+                "id": new_user.id, 
+                "name": new_user.name,
+                "age": new_user.age,
+                "username": new_user.username
+            }
+        }
+        try:
+            requests.post("http://127.0.0.1:5002/events", json=event_data)
+        except requests.exceptions.RequestException as e:
+            print(f"Evento no enviado: {e}")
+
+        print(f"Evento enviado: {event_data}")
 
         # Retorna los datos del usuario y el token
         return jsonify({"user": user_schema.dump(new_user), "token": token}), 201
