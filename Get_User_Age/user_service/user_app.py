@@ -29,7 +29,7 @@ def generate_token(user):
     return token
 
 # Ruta para crear un nuevo usuario
-@app.route('/users', methods=['POST'])
+@app.route('/users', methods=['POST']) 
 def create_user():
     try:
         # Obtiene y valida los datos de la petición
